@@ -15,10 +15,11 @@ jobs:
       - name: Setup Mambaforge
         uses: conda-incubator/setup-miniconda@v2
         with:
-            miniforge-variant: Mambaforge
-            miniforge-version: latest
-            activate-environment: my-env
+            activate-environment: testing-env
             use-mamba: true
+
+      - name: Install mamba
+        run: conda install -c conda-forge mamba
 
       - name: Install fenicsx
         run: mamba install -c conda-forge fenics-dolfinx
