@@ -1,23 +1,29 @@
 name: CI
 
 on: 
-  - push
+  push:
+    branches: 
+      - '*'
+  pull_request:
+    branches: 
+      - '*'
 
 jobs:
-  build:
-    docker:
-      - image: dolfinx/dolfinx:stable
-    steps:
-      - checkout
-      - run: pip install pytest pytest-cov
-      - run:
-          name: Run tests
-          command: |
-            python3 -m pytest test/ --cov festim --cov-report xml --cov-report term
-      - run: 
-          name: Upload to Codecov
-          command: |
-            curl -Os https://uploader.codecov.io/latest/linux/codecov
+  build-linux:
+    runs-on: ubuntu-latest
 
-            chmod +x codecov
-            ./codecov -t ${{ secrets.CODECOV_TOKEN }}
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+    - name: Install fenicsx
+      run: |
+        conda install -c conda-forge mamba
+        mamba install -c conda-forge fenicsx
+    - name: Install dependencies
+      run: |
+        pip install pytest pytest-cov
+        python3 -m pytest test/
+      
