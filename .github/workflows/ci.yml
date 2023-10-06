@@ -12,12 +12,12 @@ jobs:
 
     - name: Set up Conda
       uses: conda-incubator/setup-miniconda@v2
+      with:
+        auto-activate-base: true
+        activate-environment: myenv
 
     - name: Create Conda environment
       run: |
-        conda create -n myenv
-        source ~/miniconda/etc/profile.d/conda.sh
-        conda activate myenv
         conda install -c conda-forge mamba
         mamba install -c conda-forge fenics-dolfinx
 
