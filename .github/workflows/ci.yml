@@ -3,7 +3,7 @@ name: CI
 on: 
   push:
     branches: 
-      - '*'
+      - 'main'
   pull_request:
     branches: 
       - '*'
@@ -20,10 +20,11 @@ jobs:
         python-version: '3.10'
     - name: Install fenicsx
       run: |
-        conda install -c conda-forge mamba
-        mamba install -c conda-forge fenicsx
+        conda install -c conda-forge fenicsx
     - name: Install dependencies
       run: |
         pip install pytest pytest-cov
+    - name: Run Tests
+      run: |
         python3 -m pytest test/
       
