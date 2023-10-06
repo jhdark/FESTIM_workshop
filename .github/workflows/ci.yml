@@ -10,16 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup Mambaforge
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-            activate-environment: testing-env
-            use-mamba: true
-
-      - name: Install mamba
-        run: conda install -c conda-forge mamba
+      - uses: mamba-org/setup-micromamba@v1
+        with: 
+          environment-name: test-env
+          create-args: >-
+            python=3.10
+            numpy
 
       - name: Install fenicsx
         run: mamba install -c conda-forge fenics-dolfinx
