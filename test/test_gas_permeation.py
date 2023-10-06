@@ -1,41 +1,42 @@
-from mpi4py import MPI
-from petsc4py import PETSc
-from dolfinx.io import XDMFFile
-from dolfinx.fem import (
-    Constant,
-    dirichletbc,
-    Function,
-    FunctionSpace,
-    locate_dofs_topological,
-    locate_dofs_geometrical,
-    form,
-    assemble_scalar,
-)
-from dolfinx.fem.petsc import (
-    NonlinearProblem,
-)
-from dolfinx.nls.petsc import NewtonSolver
-from ufl import (
-    dot,
-    FiniteElement,
-    grad,
-    TestFunction,
-    exp,
-    FacetNormal,
-    dx,
-    ds,
-    Cell,
-    Mesh,
-    VectorElement,
-    Measure,
-)
-from dolfinx.mesh import (
-    create_mesh,
-    meshtags,
-)
+# from mpi4py import MPI
+# from petsc4py import PETSc
+# from dolfinx.io import XDMFFile
+# from dolfinx.fem import (
+#     Constant,
+#     dirichletbc,
+#     Function,
+#     FunctionSpace,
+#     locate_dofs_topological,
+#     locate_dofs_geometrical,
+#     form,
+#     assemble_scalar,
+# )
+# from dolfinx.fem.petsc import (
+#     NonlinearProblem,
+# )
+# from dolfinx.nls.petsc import NewtonSolver
+# from ufl import (
+#     dot,
+#     FiniteElement,
+#     grad,
+#     TestFunction,
+#     exp,
+#     FacetNormal,
+#     dx,
+#     ds,
+#     Cell,
+#     Mesh,
+#     VectorElement,
+#     Measure,
+# )
+# from dolfinx.mesh import (
+#     create_mesh,
+#     meshtags,
+# )
 from dolfinx import log
-import numpy as np
-import tqdm.autonotebook
+
+# import numpy as np
+# import tqdm.autonotebook
 
 
 def test_example():
