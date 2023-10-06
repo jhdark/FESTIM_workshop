@@ -1,31 +1,14 @@
+name: ci
+
 on:
   pull_request:
     branches:
       - '*'
 
-env:
-  CACHE_NUMBER: 0  # increase to reset cache manually
-
 jobs:
   build:
+    runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        include:
-          - os: ubuntu-latest
-            label: linux-64
-            prefix: /usr/share/miniconda3/envs/my-env
-
-          - os: macos-latest
-            label: osx-64
-            prefix: /Users/runner/miniconda3/envs/my-env
-
-          - os: windows-latest
-            label: win-64
-            prefix: C:\Miniconda3\envs\my-env
-
-    name: ${{ matrix.label }}
-    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
 
@@ -36,15 +19,6 @@ jobs:
             miniforge-version: latest
             activate-environment: my-env
             use-mamba: true
-
-      - name: Set cache date
-        run: echo "DATE=$(date +'%Y%m%d')" >> $GITHUB_ENV
-
-      - uses: actions/cache@v2
-        with:
-          path: ${{ matrix.prefix }}
-          key: ${{ matrix.label }}-conda-${{ hashFiles('environment.yml') }}-${{ env.DATE }}-${{ env.CACHE_NUMBER }}
-        id: cache
 
       - name: Install fenicsx
         run: mamba install -c conda-forge fenics-dolfinx
