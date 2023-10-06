@@ -1,26 +1,37 @@
-name: CI
+name: CI Pipeline
 
-on: 
-  pull_request:
-    branches: 
-      - '*'
+on: pull_request
 
 jobs:
-  build-linux:
+  build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        python-version: [3.8, 3.9, 3.10]
+
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.10'
-    - name: Install fenicsx
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Conda
+      uses: conda-incubator/setup-miniconda@v2
+
+    - name: Create Conda environment
       run: |
-        conda install -c conda-forge fenics-dolfinx
+        conda create -n myenv python=${{ matrix.python-version }}
+        conda activate myenv
+        mamba install -c conda-forge fenics-dolfinx
+
     - name: Install dependencies
       run: |
-        pip install pytest pytest-cov
-    - name: Run Tests
+        # You can install other project-specific dependencies here
+        pip install -r requirements.txt
+
+    - name: Run tests
       run: |
-        python3 -m pytest test/
+        pytest tests/
+
+    - name: Cleanup
+      run: |
+        conda deactivate
