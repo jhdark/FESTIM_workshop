@@ -22,10 +22,9 @@ jobs:
 
       - name: Install fenicsx
         run: mamba install -c conda-forge fenics-dolfinx
-        if: steps.cache.outputs.cache-hit != 'true'
 
       - name: Install dependencies
         run: pip install pytest pytest-cov
 
       - name: Run tests
-        run: python3 -m pytest tests/
+        run: python3 -m pytest test/
