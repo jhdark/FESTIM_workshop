@@ -6,10 +6,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        python-version: [3.10]
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -19,8 +15,9 @@ jobs:
 
     - name: Create Conda environment
       run: |
-        conda create -n myenv python=${{ matrix.python-version }}
+        conda create -n myenv
         conda activate myenv
+        conda install -c conda-forge mamba
         mamba install -c conda-forge fenics-dolfinx
 
     - name: Install dependencies
