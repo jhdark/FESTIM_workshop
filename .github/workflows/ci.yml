@@ -1,27 +1,26 @@
-name: ci
+name: CI
 
-on:
+on: 
   pull_request:
-    branches:
+    branches: 
       - '*'
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: mamba-org/setup-micromamba@v1
-        with: 
-          environment-name: test-env
-          create-args: >-
-            python=3.10
-            numpy
-
-      - name: Install fenicsx
-        run: mamba install -c conda-forge fenics-dolfinx
-
-      - name: Install dependencies
-        run: pip install pytest pytest-cov
-
-      - name: Run tests
-        run: python3 -m pytest test/
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.10'
+    - name: Install fenicsx
+      run: |
+        conda install -c conda-forge fenicsx
+    - name: Install dependencies
+      run: |
+        pip install pytest pytest-cov
+    - name: Run Tests
+      run: |
+        python3 -m pytest test/
