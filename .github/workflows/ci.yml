@@ -8,7 +8,7 @@ jobs:
 
     strategy:
       matrix:
-        python-version: 3.10
+        python-version: [3.10]
 
     steps:
     - name: Checkout code
@@ -19,7 +19,7 @@ jobs:
 
     - name: Create Conda environment
       run: |
-        conda create -n myenv
+        conda create -n myenv python=${{ matrix.python-version }}
         conda activate myenv
         mamba install -c conda-forge fenics-dolfinx
 
