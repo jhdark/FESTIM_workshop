@@ -13,12 +13,10 @@ jobs:
     - name: Set up Conda
       uses: conda-incubator/setup-miniconda@v2
       with:
-        auto-activate-base: true
         activate-environment: myenv
 
     - name: Create Conda environment
       run: |
-        conda install -c conda-forge mamba
         mamba install -c conda-forge fenics-dolfinx
 
     - name: Install dependencies
@@ -27,7 +25,7 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest tests/
+        pytest test/
 
     - name: Cleanup
       run: |
