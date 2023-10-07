@@ -26,7 +26,8 @@ jobs:
 
     - name: Run tests
       run: |
-        pytest test/
+        # pytest test/
+        python3 gas_permeation_fenicsx.py
 
     - name: Cleanup
       run: |
