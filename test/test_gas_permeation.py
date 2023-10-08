@@ -1,6 +1,5 @@
 from mpi4py import MPI
 from petsc4py import PETSc
-from dolfinx.io import XDMFFile
 from dolfinx.fem import (
     Constant,
     dirichletbc,
@@ -23,7 +22,6 @@ from ufl import (
     exp,
     FacetNormal,
     dx,
-    ds,
     Cell,
     Mesh,
     VectorElement,
@@ -34,9 +32,7 @@ from dolfinx.mesh import (
     meshtags,
 )
 from dolfinx import log
-
 import numpy as np
-import tqdm.autonotebook
 
 
 def test_example():
@@ -64,7 +60,6 @@ def test_example():
     tags_facets = np.array([1, 2], dtype=np.int32)
 
     facet_dimension = my_mesh.topology.dim - 1
-    volume_dimension = my_mesh.topology.dim
 
     mesh_tags_facets = meshtags(my_mesh, facet_dimension, dofs_facets, tags_facets)
     ds = Measure("ds", domain=my_mesh, subdomain_data=mesh_tags_facets)
@@ -99,7 +94,6 @@ def test_example():
     final_time = 50
     num_steps = int(final_time / dt)
 
-    f = Constant(my_mesh, (PETSc.ScalarType(0)))
     F = dot(D * grad(u), grad(v)) * dx
     F += ((u - u_n) / dt) * v * dx
 
@@ -108,27 +102,12 @@ def test_example():
     solver.convergence_criterion = "incremental"
     solver.rtol = 1e-10
     solver.atol = 1e10
-    solver.report = True
-    ksp = solver.krylov_solver
-    opts = PETSc.Options()
-    option_prefix = ksp.getOptionsPrefix()
-    opts[f"{option_prefix}ksp_type"] = "cg"
-    opts[f"{option_prefix}pc_type"] = "gamg"
-    opts[f"{option_prefix}pc_factor_mat_solver_type"] = "mumps"
-    ksp.setFromOptions()
-    log.set_log_level(log.LogLevel.INFO)
-
-    mobile_xdmf = XDMFFile(MPI.COMM_WORLD, "mobile_concentration.xdmf", "w")
-    mobile_xdmf.write_mesh(my_mesh)
 
     flux_values = []
     times = []
     t = 0
-    progress = tqdm.autonotebook.tqdm(
-        desc="Solving H transport problem", total=num_steps
-    )
+
     for i in range(num_steps):
-        progress.update(1)
         t += dt
 
         solver.solve(u)
@@ -140,8 +119,4 @@ def test_example():
         np.savetxt("outgassing_flux.txt", np.array(flux_values))
         np.savetxt("times.txt", np.array(times))
 
-        # mobile_xdmf.write_function(u, t)
-
         u_n.x.array[:] = u.x.array[:]
-
-    # mobile_xdmf.close()
