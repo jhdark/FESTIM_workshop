@@ -37,6 +37,7 @@ def test_permeation_problem(mesh_size=1001):
             species=mobile_H,
         ),
     ]
+    my_model.exports = [F.XDMFExport("mobile_concentration.xdmf", field=mobile_H)]
 
     my_model.initialise()
 

@@ -127,10 +127,10 @@ class HydrogenTransportProblem:
             # TODO implement when export.field is an int or str
             # then find solution from index of species
 
-            if isinstance(export, F.VTXExport):
-                export.define_writer(
-                    MPI.COMM_WORLD, [field.solution for field in export.field]
-                )
+            if isinstance(export, (F.VTXExport, F.XDMFExport)):
+                export.define_writer(MPI.COMM_WORLD)
+                if isinstance(export, F.XDMFExport):
+                    export.writer.write_mesh(self.mesh.mesh)
 
     def define_function_space(self):
         element_CG = ufl.FiniteElement("CG", self.mesh.mesh.ufl_cell(), 1)
@@ -324,6 +324,10 @@ class HydrogenTransportProblem:
 
             mobile_H_xdmf.write_function(res[0], self.t.value)
             mobile_D_xdmf.write_function(res[1], self.t.value)
+
+            for export in self.exports:
+                if isinstance(export, (F.VTXExport, F.XDMFExport)):
+                    export.write(float(self.t))
 
             # update previous solution
             self.u_n.x.array[:] = self.u.x.array[:]
