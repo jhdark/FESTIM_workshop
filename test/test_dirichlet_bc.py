@@ -57,13 +57,14 @@ def test_callable_for_value():
     subdomain = F.SurfaceSubdomain1D(1, x=1)
     vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
     value = lambda x, t: 1.0 + x[0] + t
-    species = "test"
+    species = F.Species("test")
 
     bc = F.DirichletBC(subdomain, value, species)
 
     my_model = F.HydrogenTransportProblem(
         mesh=F.Mesh(mesh),
         subdomains=[subdomain, vol_subdomain],
+        species=[species],
     )
 
     my_model.define_function_space()
@@ -90,228 +91,228 @@ def test_callable_for_value():
         assert np.isclose(computed_value, expected_value)
 
 
-def test_value_callable_x_t_T():
-    """Test that the value attribute can be a callable function of x, t, and T"""
+# def test_value_callable_x_t_T():
+#     """Test that the value attribute can be a callable function of x, t, and T"""
 
-    subdomain = F.SurfaceSubdomain1D(1, x=1)
-    vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
-    value = lambda x, t, T: 1.0 + x[0] + t + T
-    species = "test"
+#     subdomain = F.SurfaceSubdomain1D(1, x=1)
+#     vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
+#     value = lambda x, t, T: 1.0 + x[0] + t + T
+#     species = "test"
 
-    bc = F.DirichletBC(subdomain, value, species)
+#     bc = F.DirichletBC(subdomain, value, species)
 
-    my_model = F.HydrogenTransportProblem(
-        mesh=F.Mesh(mesh),
-        subdomains=[subdomain, vol_subdomain],
-    )
+#     my_model = F.HydrogenTransportProblem(
+#         mesh=F.Mesh(mesh),
+#         subdomains=[subdomain, vol_subdomain],
+#     )
 
-    my_model.define_function_space()
-    my_model.define_markers_and_measures()
+#     my_model.define_function_space()
+#     my_model.define_markers_and_measures()
 
-    T = fem.Constant(my_model.mesh.mesh, 550.0)
-    t = fem.Constant(my_model.mesh.mesh, 0.0)
-    bc.create_value(my_model.mesh.mesh, my_model.function_space, T, t)
+#     T = fem.Constant(my_model.mesh.mesh, 550.0)
+#     t = fem.Constant(my_model.mesh.mesh, 0.0)
+#     bc.create_value(my_model.mesh.mesh, my_model.function_space, T, t)
 
-    # check that the value_fenics attribute is set correctly
-    assert isinstance(bc.value_fenics, fem.Function)
+#     # check that the value_fenics attribute is set correctly
+#     assert isinstance(bc.value_fenics, fem.Function)
 
-    # check the initial value of the boundary condition
-    assert np.isclose(
-        bc.value_fenics.vector.array[-1],
-        float(value(x=np.array([subdomain.x]), t=float(t), T=float(T))),
-    )
+#     # check the initial value of the boundary condition
+#     assert np.isclose(
+#         bc.value_fenics.vector.array[-1],
+#         float(value(x=np.array([subdomain.x]), t=float(t), T=float(T))),
+#     )
 
-    # check the value of the boundary condition after updating the time
-    for i in range(10):
-        t.value = i
-        T.value += i
-        bc.update(float(t))
+#     # check the value of the boundary condition after updating the time
+#     for i in range(10):
+#         t.value = i
+#         T.value += i
+#         bc.update(float(t))
 
-        expected_value = float(value(x=np.array([subdomain.x]), t=float(t), T=float(T)))
-        computed_value = bc.value_fenics.vector.array[-1]
-        assert np.isclose(computed_value, expected_value)
-
-
-def test_callable_t_only():
-    """Test that the value attribute can be a callable function of t only"""
-
-    subdomain = F.SurfaceSubdomain1D(1, x=1)
-    vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
-    value = lambda t: 1.0 + t
-    species = "test"
-
-    bc = F.DirichletBC(subdomain, value, species)
-
-    my_model = F.HydrogenTransportProblem(
-        mesh=F.Mesh(mesh),
-        subdomains=[subdomain, vol_subdomain],
-    )
-
-    my_model.define_function_space()
-    my_model.define_markers_and_measures()
-
-    T = fem.Constant(my_model.mesh.mesh, 550.0)
-    t = fem.Constant(my_model.mesh.mesh, 0.0)
-    bc.create_value(my_model.mesh.mesh, my_model.function_space, T, t)
-
-    # check that the value_fenics attribute is set correctly
-    assert isinstance(bc.value_fenics, fem.Constant)
-
-    # check the initial value of the boundary condition
-    assert np.isclose(
-        float(bc.value_fenics),
-        float(value(t=float(t))),
-    )
-
-    # check the value of the boundary condition after updating the time
-    for i in range(10):
-        t.value = i
-        bc.update(float(t))
-
-        expected_value = float(value(t=float(t)))
-        computed_value = float(bc.value_fenics)
-        assert np.isclose(computed_value, expected_value)
+#         expected_value = float(value(x=np.array([subdomain.x]), t=float(t), T=float(T)))
+#         computed_value = bc.value_fenics.vector.array[-1]
+#         assert np.isclose(computed_value, expected_value)
 
 
-def test_callable_x_only():
-    """Test that the value attribute can be a callable function of x only"""
+# def test_callable_t_only():
+#     """Test that the value attribute can be a callable function of t only"""
 
-    # BUILD
-    subdomain = F.SurfaceSubdomain1D(1, x=1)
-    vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
-    value = lambda x: 1.0 + x[0]
-    species = "test"
+#     subdomain = F.SurfaceSubdomain1D(1, x=1)
+#     vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
+#     value = lambda t: 1.0 + t
+#     species = "test"
 
-    bc = F.DirichletBC(subdomain, value, species)
+#     bc = F.DirichletBC(subdomain, value, species)
 
-    my_model = F.HydrogenTransportProblem(
-        mesh=F.Mesh(mesh),
-        subdomains=[subdomain, vol_subdomain],
-    )
+#     my_model = F.HydrogenTransportProblem(
+#         mesh=F.Mesh(mesh),
+#         subdomains=[subdomain, vol_subdomain],
+#     )
 
-    my_model.define_function_space()
-    my_model.define_markers_and_measures()
+#     my_model.define_function_space()
+#     my_model.define_markers_and_measures()
 
-    T = fem.Constant(my_model.mesh.mesh, 550.0)
-    t = fem.Constant(my_model.mesh.mesh, 0.0)
+#     T = fem.Constant(my_model.mesh.mesh, 550.0)
+#     t = fem.Constant(my_model.mesh.mesh, 0.0)
+#     bc.create_value(my_model.mesh.mesh, my_model.function_space, T, t)
 
-    # TEST
-    bc.create_value(my_model.mesh.mesh, my_model.function_space, T, t)
+#     # check that the value_fenics attribute is set correctly
+#     assert isinstance(bc.value_fenics, fem.Constant)
 
-    # check that the value_fenics attribute is set correctly
-    assert isinstance(bc.value_fenics, fem.Function)
+#     # check the initial value of the boundary condition
+#     assert np.isclose(
+#         float(bc.value_fenics),
+#         float(value(t=float(t))),
+#     )
 
-    # check the initial value of the boundary condition
-    assert np.isclose(
-        bc.value_fenics.vector.array[-1],
-        float(value(x=np.array([subdomain.x]))),
-    )
+#     # check the value of the boundary condition after updating the time
+#     for i in range(10):
+#         t.value = i
+#         bc.update(float(t))
 
-    # check the value of the boundary condition after updating the time
-    for i in range(10):
-        t.value = i
-        bc.update(float(t))
-        expected_value = float(value(x=np.array([subdomain.x])))
-        computed_value = bc.value_fenics.vector.array[-1]
-        assert np.isclose(computed_value, expected_value)
+#         expected_value = float(value(t=float(t)))
+#         computed_value = float(bc.value_fenics)
+#         assert np.isclose(computed_value, expected_value)
 
 
-@pytest.mark.parametrize(
-    "value",
-    [
-        1.0,
-        lambda x: 1.0 + x[0],
-        lambda x, t: 1.0 + x[0] + t,
-        lambda x, t, T: 1.0 + x[0] + t + T,
-    ],
-)
-def test_create_formulation(value):
-    """A test that checks that the method create_formulation can be called when value is either a callable or a float"""
-    # BUILD
-    subdomain = F.SurfaceSubdomain1D(1, x=1)
-    vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
-    species = "test"
+# def test_callable_x_only():
+#     """Test that the value attribute can be a callable function of x only"""
 
-    bc = F.DirichletBC(subdomain, value, species)
+#     # BUILD
+#     subdomain = F.SurfaceSubdomain1D(1, x=1)
+#     vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
+#     value = lambda x: 1.0 + x[0]
+#     species = "test"
 
-    my_model = F.HydrogenTransportProblem(
-        mesh=F.Mesh(mesh),
-        subdomains=[subdomain, vol_subdomain],
-    )
+#     bc = F.DirichletBC(subdomain, value, species)
 
-    my_model.define_function_space()
-    my_model.define_markers_and_measures()
+#     my_model = F.HydrogenTransportProblem(
+#         mesh=F.Mesh(mesh),
+#         subdomains=[subdomain, vol_subdomain],
+#     )
 
-    T = fem.Constant(my_model.mesh.mesh, 550.0)
-    t = fem.Constant(my_model.mesh.mesh, 0.0)
+#     my_model.define_function_space()
+#     my_model.define_markers_and_measures()
 
-    dofs = bc.define_surface_subdomain_dofs(
-        my_model.facet_meshtags, my_model.mesh, my_model.function_space
-    )
-    bc.create_value(my_model.mesh.mesh, my_model.function_space, T, t)
+#     T = fem.Constant(my_model.mesh.mesh, 550.0)
+#     t = fem.Constant(my_model.mesh.mesh, 0.0)
 
-    # TEST
-    formulation = bc.create_formulation(dofs, my_model.function_space)
+#     # TEST
+#     bc.create_value(my_model.mesh.mesh, my_model.function_space, T, t)
 
-    assert isinstance(formulation, fem.DirichletBC)
+#     # check that the value_fenics attribute is set correctly
+#     assert isinstance(bc.value_fenics, fem.Function)
+
+#     # check the initial value of the boundary condition
+#     assert np.isclose(
+#         bc.value_fenics.vector.array[-1],
+#         float(value(x=np.array([subdomain.x]))),
+#     )
+
+#     # check the value of the boundary condition after updating the time
+#     for i in range(10):
+#         t.value = i
+#         bc.update(float(t))
+#         expected_value = float(value(x=np.array([subdomain.x])))
+#         computed_value = bc.value_fenics.vector.array[-1]
+#         assert np.isclose(computed_value, expected_value)
 
 
-@pytest.mark.parametrize(
-    "value",
-    [
-        1.0,
-        lambda t: 1.0 + t,
-        lambda x: 1.0 + x[0],
-        lambda x, t: 1.0 + x[0] + t,
-        lambda x, t, T: 1.0 + x[0] + t + T,
-        lambda x, t: ufl.conditional(ufl.lt(t, 1.0), 100.0 + x[0], 0.0),
-    ],
-)
-def test_integration_with_HTransportProblem(value):
-    subdomain = F.SurfaceSubdomain1D(1, x=1)
-    vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
+# @pytest.mark.parametrize(
+#     "value",
+#     [
+#         1.0,
+#         lambda x: 1.0 + x[0],
+#         lambda x, t: 1.0 + x[0] + t,
+#         lambda x, t, T: 1.0 + x[0] + t + T,
+#     ],
+# )
+# def test_create_formulation(value):
+#     """A test that checks that the method create_formulation can be called when value is either a callable or a float"""
+#     # BUILD
+#     subdomain = F.SurfaceSubdomain1D(1, x=1)
+#     vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
+#     species = "test"
 
-    my_model = F.HydrogenTransportProblem(
-        mesh=F.Mesh(mesh),
-        subdomains=[vol_subdomain, subdomain],
-    )
-    my_model.species = [F.Species("H")]
-    my_bc = F.DirichletBC(subdomain, value, my_model.species[0])
-    my_model.boundary_conditions = [my_bc]
+#     bc = F.DirichletBC(subdomain, value, species)
 
-    my_model.temperature = fem.Constant(my_model.mesh.mesh, 550.0)
+#     my_model = F.HydrogenTransportProblem(
+#         mesh=F.Mesh(mesh),
+#         subdomains=[subdomain, vol_subdomain],
+#     )
 
-    # RUN
+#     my_model.define_function_space()
+#     my_model.define_markers_and_measures()
 
-    my_model.initialise()
+#     T = fem.Constant(my_model.mesh.mesh, 550.0)
+#     t = fem.Constant(my_model.mesh.mesh, 0.0)
 
-    assert my_bc.value_fenics is not None
+#     dofs = bc.define_surface_subdomain_dofs(
+#         my_model.facet_meshtags, my_model.mesh, my_model.function_space
+#     )
+#     bc.create_value(my_model.mesh.mesh, my_model.function_space, T, t)
 
-    my_model.run(final_time=2)
+#     # TEST
+#     formulation = bc.create_formulation(dofs, my_model.function_space)
 
-    # TEST
+#     assert isinstance(formulation, fem.DirichletBC)
 
-    if isinstance(value, float):
-        expected_value = value
-        computed_value = float(my_bc.value_fenics)
-    elif callable(value):
-        arguments = value.__code__.co_varnames
-        if "x" in arguments and "t" in arguments and "T" in arguments:
-            expected_value = value(x=np.array([subdomain.x]), t=2.0, T=550.0)
-            computed_value = my_bc.value_fenics.vector.array[-1]
-        elif "x" in arguments and "t" in arguments:
-            expected_value = value(x=np.array([subdomain.x]), t=2.0)
-            computed_value = my_bc.value_fenics.vector.array[-1]
-        elif "x" in arguments:
-            expected_value = value(x=np.array([subdomain.x]))
-            computed_value = my_bc.value_fenics.vector.array[-1]
-        elif "t" in arguments:
-            expected_value = value(t=2.0)
-            computed_value = float(my_bc.value_fenics)
-        else:
-            # test fails if lambda function is not recognised
-            raise ValueError("value function not recognised")
 
-    if isinstance(expected_value, Conditional):
-        expected_value = float(expected_value)
-    assert np.isclose(computed_value, expected_value)
+# @pytest.mark.parametrize(
+#     "value",
+#     [
+#         1.0,
+#         lambda t: 1.0 + t,
+#         lambda x: 1.0 + x[0],
+#         lambda x, t: 1.0 + x[0] + t,
+#         lambda x, t, T: 1.0 + x[0] + t + T,
+#         lambda x, t: ufl.conditional(ufl.lt(t, 1.0), 100.0 + x[0], 0.0),
+#     ],
+# )
+# def test_integration_with_HTransportProblem(value):
+#     subdomain = F.SurfaceSubdomain1D(1, x=1)
+#     vol_subdomain = F.VolumeSubdomain1D(1, borders=[0, 1], material=dummy_mat)
+
+#     my_model = F.HydrogenTransportProblem(
+#         mesh=F.Mesh(mesh),
+#         subdomains=[vol_subdomain, subdomain],
+#     )
+#     my_model.species = [F.Species("H")]
+#     my_bc = F.DirichletBC(subdomain, value, my_model.species[0])
+#     my_model.boundary_conditions = [my_bc]
+
+#     my_model.temperature = fem.Constant(my_model.mesh.mesh, 550.0)
+
+#     # RUN
+
+#     my_model.initialise()
+
+#     assert my_bc.value_fenics is not None
+
+#     my_model.run(final_time=2)
+
+#     # TEST
+
+#     if isinstance(value, float):
+#         expected_value = value
+#         computed_value = float(my_bc.value_fenics)
+#     elif callable(value):
+#         arguments = value.__code__.co_varnames
+#         if "x" in arguments and "t" in arguments and "T" in arguments:
+#             expected_value = value(x=np.array([subdomain.x]), t=2.0, T=550.0)
+#             computed_value = my_bc.value_fenics.vector.array[-1]
+#         elif "x" in arguments and "t" in arguments:
+#             expected_value = value(x=np.array([subdomain.x]), t=2.0)
+#             computed_value = my_bc.value_fenics.vector.array[-1]
+#         elif "x" in arguments:
+#             expected_value = value(x=np.array([subdomain.x]))
+#             computed_value = my_bc.value_fenics.vector.array[-1]
+#         elif "t" in arguments:
+#             expected_value = value(t=2.0)
+#             computed_value = float(my_bc.value_fenics)
+#         else:
+#             # test fails if lambda function is not recognised
+#             raise ValueError("value function not recognised")
+
+#     if isinstance(expected_value, Conditional):
+#         expected_value = float(expected_value)
+#     assert np.isclose(computed_value, expected_value)

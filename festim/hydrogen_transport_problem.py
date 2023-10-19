@@ -119,9 +119,9 @@ class HydrogenTransportProblem:
         self.define_boundary_conditions()
         self.create_formulation()
         self.create_solver()
-        self.defing_export_writers()
+        self.define_export_writers()
 
-    def defing_export_writers(self):
+    def define_export_writers(self):
         """Defines the export writers of the model"""
         for export in self.exports:
             # TODO implement when export.field is an int or str
@@ -142,7 +142,7 @@ class HydrogenTransportProblem:
                 if isinstance(spe, F.Species):
                     # TODO check if mobile or immobile for traps
                     elements.append(element_CG)
-        mixed_element = ufl.MixedElement(elements)
+            mixed_element = ufl.MixedElement(elements)
 
         self.function_space = fem.FunctionSpace(self.mesh.mesh, mixed_element)
 
@@ -298,11 +298,6 @@ class HydrogenTransportProblem:
         """Runs the model for a given time"""
         final_time = self.settings.final_time
 
-        mobile_H_xdmf = XDMFFile(MPI.COMM_WORLD, "mobile_H.xdmf", "w")
-        mobile_D_xdmf = XDMFFile(MPI.COMM_WORLD, "mobile_D.xdmf", "w")
-        mobile_H_xdmf.write_mesh(self.mesh.mesh)
-        mobile_D_xdmf.write_mesh(self.mesh.mesh)
-
         progress = tqdm.autonotebook.tqdm(
             desc="Solving H transport problem", total=final_time, unit_scale=True
         )
@@ -316,36 +311,19 @@ class HydrogenTransportProblem:
 
             self.solver.solve(self.u)
 
-            # sub_solutions = list(self.u.split())
-            if len(self.species) == 1:
-                res = self.u
-            else:
-                res = list(self.u.split())
-
-            mobile_H_xdmf.write_function(res[0], self.t.value)
-            mobile_D_xdmf.write_function(res[1], self.t.value)
-
-            for export in self.exports:
-                if isinstance(export, (F.VTXExport, F.XDMFExport)):
-                    export.write(float(self.t))
+            self.post_processing(self.u, float(self.t))
 
             # update previous solution
             self.u_n.x.array[:] = self.u.x.array[:]
 
-        mobile_H_xdmf.close()
-        mobile_D_xdmf.close()
-
-    def post_processing(self, solution):
+    def post_processing(self, solution, t):
         if len(self.species) == 1:
             res = solution
         else:
             res = list(solution.split())
-
             for idx, spe in enumerate(self.species):
-                for export in self.exports:
-                    if isinstance(export, F.VTXExport):
-                        if spe.name == export.species:
-                            export.write(res[idx], self.t.value)
-                    if isinstance(export, F.XDMFExport):
-                        if spe.name == export.species:
-                            export.write(res[idx], self.t.value)
+                spe.solution = res[idx]
+
+        for export in self.exports:
+            if isinstance(export, (F.VTXExport, F.XDMFExport)):
+                export.write(float(t))
