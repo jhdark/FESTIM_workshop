@@ -111,7 +111,7 @@ def test_meshtags_from_xdmf(tmp_path, mesh):
     facet_meshtags_2 = my_mesh.define_surface_markers()
     volume_meshtags_2 = my_mesh.define_volume_markers()
 
-    # TEST
+    # # TEST
     assert volume_meshtags.dim == volume_meshtags_2.dim
     assert volume_meshtags.values.all() == volume_meshtags_2.values.all()
     assert facet_meshtags.dim == facet_meshtags_2.dim
