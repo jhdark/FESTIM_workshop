@@ -18,6 +18,7 @@ class HydrogenTransportProblem:
         mesh (festim.Mesh): the mesh of the model
         subdomains (list of festim.Subdomain): the subdomains of the model
         species (list of festim.Species): the species of the model
+        reactions (list of festim.Reaction): the reactions of the model
         temperature (float, int, fem.Constant, fem.Function or callable): the
             temperature of the model (K)
         sources (list of festim.Source): the hydrogen sources of the model
@@ -30,6 +31,7 @@ class HydrogenTransportProblem:
         mesh (festim.Mesh): the mesh of the model
         subdomains (list of festim.Subdomain): the subdomains of the model
         species (list of festim.Species): the species of the model
+        reactions (list of festim.Reaction): the reactions of the model
         temperature (float, int, fem.Constant, fem.Function or callable): the
             temperature of the model (K)
         boundary_conditions (list of festim.BoundaryCondition): the boundary
@@ -86,6 +88,7 @@ class HydrogenTransportProblem:
         mesh=None,
         subdomains=[],
         species=[],
+        reactions=[],
         temperature=None,
         sources=[],
         boundary_conditions=[],
@@ -95,6 +98,7 @@ class HydrogenTransportProblem:
         self.mesh = mesh
         self.subdomains = subdomains
         self.species = species
+        self.reactions = reactions
         self.temperature = temperature
         self.sources = sources
         self.boundary_conditions = boundary_conditions
@@ -137,7 +141,10 @@ class HydrogenTransportProblem:
         if value is None:
             self._temperature_fenics = value
             return
-        elif not isinstance(value, (fem.Constant, fem.Function)):
+        elif not isinstance(
+            value,
+            (fem.Constant, fem.Function),
+        ):
             raise TypeError(f"Value must be a fem.Constant or fem.Function")
         self._temperature_fenics = value
 
@@ -157,6 +164,20 @@ class HydrogenTransportProblem:
     def multispecies(self):
         return len(self.species) > 1
 
+    @property
+    def species(self):
+        return self._species
+
+    @species.setter
+    def species(self, value):
+        # check that all species are of type festim.Species
+        for spe in value:
+            if not isinstance(spe, F.Species):
+                raise TypeError(
+                    f"elements of species must be of type festim.Species not {type(spe)}"
+                )
+        self._species = value
+
     def initialise(self):
         self.define_function_spaces()
         self.define_markers_and_measures()
@@ -167,6 +188,7 @@ class HydrogenTransportProblem:
 
         self.define_temperature()
         self.define_boundary_conditions()
+        self.create_source_values_fenics()
         self.create_formulation()
         self.create_solver()
         self.initialise_exports()
@@ -323,7 +345,6 @@ class HydrogenTransportProblem:
             elements = []
             for spe in self.species:
                 if isinstance(spe, F.Species):
-                    # TODO check if mobile or immobile for traps
                     elements.append(element_CG)
             element = ufl.MixedElement(elements)
 
@@ -408,7 +429,12 @@ class HydrogenTransportProblem:
             self.volume_meshtags = meshtags(
                 self.mesh.mesh, self.mesh.vdim, mesh_cell_indices, tags_volumes
             )
-
+            
+         # check volume ids are unique
+        vol_ids = [vol.id for vol in self.volume_subdomains]
+        if len(vol_ids) != len(np.unique(vol_ids)):
+            raise ValueError("Volume ids are not unique")
+            
         # define measures
         self.ds = ufl.Measure(
             "ds", domain=self.mesh.mesh, subdomain_data=self.facet_meshtags
@@ -484,13 +510,32 @@ class HydrogenTransportProblem:
 
         return form
 
+    def create_source_values_fenics(self):
+        """For each source create the value_fenics"""
+        for source in self.sources:
+            # create value_fenics for all F.Source objects
+            if isinstance(source, F.Source):
+                function_space_value = None
+                if callable(source.value):
+                    # if bc.value is a callable then need to provide a functionspace
+                    if not self.multispecies:
+                        function_space_value = source.species.sub_function_space
+                    else:
+                        function_space_value = source.species.collapsed_function_space
+
+                source.create_value_fenics(
+                    mesh=self.mesh.mesh,
+                    temperature=self.temperature_fenics,
+                    function_space=function_space_value,
+                    t=self.t,
+                )
+
     def create_formulation(self):
         """Creates the formulation of the model"""
-        if len(self.sources) > 1:
-            raise NotImplementedError("Sources not implemented yet")
 
         self.formulation = 0
 
+        # add diffusion and time derivative for each species
         for spe in self.species:
             u = spe.solution
             u_n = spe.prev_solution
@@ -500,24 +545,49 @@ class HydrogenTransportProblem:
                 D = vol.material.get_diffusion_coefficient(
                     self.mesh.mesh, self.temperature_fenics, spe
                 )
+                if spe.mobile:
+                    self.formulation += ufl.dot(D * ufl.grad(u), ufl.grad(v)) * self.dx(
+                        vol.id
+                    )
 
-                self.formulation += ufl.dot(D * ufl.grad(u), ufl.grad(v)) * self.dx(
-                    vol.id
-                )
                 self.formulation += ((u - u_n) / self.dt) * v * self.dx(vol.id)
 
-                # add sources
-                # TODO implement this
-                # for source in self.sources:
-                #     # f = Constant(my_mesh.mesh, (PETSc.ScalarType(0)))
-                #     if source.species == spe:
-                #         formulation += source * v * self.dx
-                # add fluxes
-                # TODO implement this
-                # for bc in self.boundary_conditions:
-                #     pass
-                #     if bc.species == spe and bc.type != "dirichlet":
-                #         formulation += bc * v * self.ds
+        # add sources
+        for source in self.sources:
+            self.formulation -= (
+                source.value_fenics
+                * source.species.test_function
+                * self.dx(source.volume.id)
+            )
+
+            # add fluxes
+            # TODO implement this
+            # for bc in self.boundary_conditions:
+            #     pass
+            #     if bc.species == spe and bc.type != "dirichlet":
+            #         formulation += bc * v * self.ds
+
+        for reaction in self.reactions:
+            # reactant 1
+            if isinstance(reaction.reactant1, F.Species):
+                self.formulation += (
+                    reaction.reaction_term(self.temperature_fenics)
+                    * reaction.reactant1.test_function
+                    * self.dx
+                )
+            # reactant 2
+            if isinstance(reaction.reactant2, F.Species):
+                self.formulation += (
+                    reaction.reaction_term(self.temperature_fenics)
+                    * reaction.reactant2.test_function
+                    * self.dx
+                )
+            # product
+            self.formulation += (
+                -reaction.reaction_term(self.temperature_fenics)
+                * reaction.product.test_function
+                * self.dx
+            )
 
     def create_solver(self):
         """Creates the solver of the model"""
@@ -532,14 +602,7 @@ class HydrogenTransportProblem:
         self.solver.max_it = self.settings.max_iterations
 
     def run(self):
-        """Runs the model
-
-        Returns:
-            list of float: the times of the simulation
-            list of float: the fluxes of the simulation
-        """
-        self.times, self.flux_values = [], []
-        self.flux_values_1, self.flux_values_2 = [], []
+        """Runs the model"""
 
         self.progress = tqdm.autonotebook.tqdm(
             desc="Solving H transport problem",
@@ -570,14 +633,19 @@ class HydrogenTransportProblem:
         if self.temperature_time_dependent:
             if isinstance(self.temperature_fenics, fem.Constant):
                 self.temperature_fenics.value = self.temperature(t=t)
-            else:
+            elif isinstance(self.temperature_fenics, fem.Function):
                 self.temperature_fenics.interpolate(self.temperature_expr)
-
         for bc in self.boundary_conditions:
             if bc.time_dependent:
                 bc.update(t=t)
             elif self.temperature_time_dependent and bc.temperature_dependent:
                 bc.update(t=t)
+
+        for source in self.sources:
+            if source.time_dependent:
+                source.update(t=t)
+            elif self.temperature_time_dependent and source.temperature_dependent:
+                source.update(t=t)
 
     def post_processing(self):
         """Post processes the model"""
