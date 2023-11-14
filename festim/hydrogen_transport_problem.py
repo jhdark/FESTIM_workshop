@@ -111,10 +111,10 @@ class HydrogenTransportProblem:
         self.facet_meshtags = None
         self.volume_meshtags = None
         self.formulation = None
-        self.volume_subdomains = []
-        self.surface_subdomains = []
         self.bc_forms = []
         self.temperature_fenics = None
+        self.volume_subdomains = []
+        self.surface_subdomains = []
 
     @property
     def temperature(self):
@@ -178,6 +178,20 @@ class HydrogenTransportProblem:
                     f"elements of species must be of type festim.Species not {type(spe)}"
                 )
         self._species = value
+
+    @property
+    def volume_subdomains(self):
+        for sub_dom in self.subdomains:
+            if isinstance(sub_dom, F.VolumeSubdomain):
+                self.volume_subdomains.append(sub_dom)
+        # return self._volume_subdomains
+
+    @property
+    def surface_subdomains(self):
+        for sub_dom in self.subdomains:
+            if isinstance(sub_dom, F.SurfaceSubdomain):
+                self.surface_subdomains.append(sub_dom)
+        # return self._surface_subdomains
 
     def initialise(self):
         self.define_function_spaces()
@@ -401,10 +415,10 @@ class HydrogenTransportProblem:
             tags_volumes = np.full(num_cells, 0, dtype=np.int32)
 
             for sub_dom in self.subdomains:
-                if isinstance(sub_dom, F.SurfaceSubdomain):
-                    self.surface_subdomains.append(sub_dom)
-                elif isinstance(sub_dom, F.VolumeSubdomain):
-                    self.volume_subdomains.append(sub_dom)
+                # if isinstance(sub_dom, F.SurfaceSubdomain):
+                #     self.surface_subdomains.append(sub_dom)
+                # elif isinstance(sub_dom, F.VolumeSubdomain):
+                #     self.volume_subdomains.append(sub_dom)
 
                 if isinstance(sub_dom, F.SurfaceSubdomain1D):
                     facet_index = sub_dom.locate_boundary_facet_indices(

@@ -19,7 +19,7 @@ def find_surface_from_id(id: int, surfaces: list):
         surfaces (list): the list of surfaces
 
     Returns:
-        surface (festim.SurfaceSubdomain): the surface subdomain object with the correct id
+        festim.SurfaceSubdomain: the surface subdomain object with the correct id
 
     Raises:
         ValueError: if the surface name is not found in the list of surfaces
