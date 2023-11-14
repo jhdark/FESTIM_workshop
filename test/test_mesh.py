@@ -41,9 +41,10 @@ def test_vdim_changes_when_mesh_changes():
         assert my_mesh.vdim == mesh.topology.dim
 
 
-def test_subdomains_from_xdmf(tmp_path):
+@pytest.mark.parametrize("mesh", [mesh_1D, mesh_2D, mesh_3D])
+def test_meshtags_from_xdmf(tmp_path, mesh):
+    """Test that the facet and volume meshtags are read correctly from the mesh XDMF files"""
     # create mesh functions
-    mesh = mesh_2D
     fdim = mesh.topology.dim - 1
     vdim = mesh.topology.dim
 
@@ -75,34 +76,28 @@ def test_subdomains_from_xdmf(tmp_path):
         vdim,
         lambda x: x[0] <= 0.5,
     )
-    print(volume_indices_left)
 
     volume_indices_right = fenics_mesh.locate_entities(
         mesh,
         vdim,
         lambda x: x[0] >= 0.5,
     )
-    print(volume_indices_right)
 
-    tags_volumes[volume_indices_left] = 1
-    tags_volumes[volume_indices_right] = 2
+    tags_volumes[volume_indices_left] = 2
+    tags_volumes[volume_indices_right] = 3
 
-    # print(tags_volumes)
-    # quit()
     volume_meshtags = fenics_mesh.meshtags(mesh, vdim, mesh_cell_indices, tags_volumes)
 
     # write files
     surface_file = XDMFFile(
         MPI.COMM_WORLD, os.path.join(tmp_path, "facets_file.xdmf"), "w"
     )
-    # surface_file = XDMFFile(MPI.COMM_WORLD, "facets_file.xdmf", "w")
     surface_file.write_mesh(mesh)
     surface_file.write_meshtags(facet_meshtags, mesh.geometry)
 
     volume_file = XDMFFile(
         MPI.COMM_WORLD, os.path.join(tmp_path, "volumes_file.xdmf"), "w"
     )
-    # volume_file = XDMFFile(MPI.COMM_WORLD, "volumes_file.xdmf", "w")
     volume_file.write_mesh(mesh)
     volume_file.write_meshtags(volume_meshtags, mesh.geometry)
 
@@ -110,12 +105,14 @@ def test_subdomains_from_xdmf(tmp_path):
     my_mesh = F.MeshXDMF(
         volume_file=os.path.join(tmp_path, "volumes_file.xdmf"),
         facet_file=os.path.join(tmp_path, "facets_file.xdmf"),
+        mesh_name="mesh",
+        meshtags_name="mesh_tags",
     )
-    volume_meshtags_2, facet_meshtags_2 = (
-        my_mesh.volume_markers,
-        my_mesh.surface_markers,
-    )
+    facet_meshtags_2 = my_mesh.define_surface_markers()
+    volume_meshtags_2 = my_mesh.define_volume_markers()
 
-    # check
-    assert volume_meshtags == volume_meshtags_2
-    assert facet_meshtags == facet_meshtags_2
+    # TEST
+    assert volume_meshtags.dim == volume_meshtags_2.dim
+    assert volume_meshtags.values.all() == volume_meshtags_2.values.all()
+    assert facet_meshtags.dim == facet_meshtags_2.dim
+    assert facet_meshtags.values.all() == facet_meshtags_2.values.all()
