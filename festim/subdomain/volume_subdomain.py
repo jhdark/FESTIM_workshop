@@ -19,7 +19,7 @@ def find_volume_from_id(id: int, volumes: list):
         volumes (list): the list of volumes
 
     Returns:
-        volume (festim.VolumeSubdomain1D): the volume subdomain object with the correct id
+        volume (festim.VolumeSubdomain): the volume subdomain object with the correct id
 
     Raises:
         ValueError: if the volume name is not found in the list of volumes
