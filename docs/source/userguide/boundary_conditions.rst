@@ -9,47 +9,21 @@ If no BC is set on a boundary, it is assumed that the flux is null. This is also
 ---------------
 Basic BCs
 ---------------
-These BCs can be used for heat transfer or hydrogen transport simulations.
 
 Imposing the solution
 ^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: python
 
-    my_bc = DirichletBC(surfaces=[2, 4], value=10, field=0)
+    my_bc = DirichletBC(subdomain=my_surface, value=10, species=my_species)
 
-.. admonition:: Note
-   :class: tip
-
-    Here, we set :code:`field=0` to specify this BC applies to the mobile hydrogen concentration. :code:`1` would stand for the trap 1 concentration and :code:`"T"` for temperature.
-
-The `value` argument can be space and time dependent by making use of the FESTIM variables ``x``, ``y``, ``z`` and ``t``:
+The `value` argument can be space and time dependent by making use of the lamda functions:
 
 .. code-block:: python
 
-    from festim import x, y, z, t
-    my_bc = DirichletBC(surfaces=3, value=10 + x**2 + t, field="T")
+    my_bc = DirichletBC(surfaces=3, value=lamda x, t: 10 + x**2 + t, field="T")
 
 
-To use more complicated mathematical expressions, you can use the sympy package:
-
-.. code-block:: python
-
-    from festim import x, y, z, t
-    import sympy as sp
-
-    my_bc = DirichletBC(surfaces=3, value=10*sp.exp(-t), field="T")
-
-- CustomDirichlet
-
-The value of the concentration field can be temperature-dependent (useful when dealing with heat-transfer solvers) with :code:`CustomDirichlet`:
-
-.. code-block:: python
-
-    def value(T):
-        return 3*T + 2
-
-    my_bc = CustomDirichlet(surfaces=3, function=value, field=0)
 
 Imposing the flux
 ^^^^^^^^^^^^^^^^^
