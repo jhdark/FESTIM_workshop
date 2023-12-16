@@ -13,6 +13,7 @@ dummy_mat = F.Material(D_0=1, E_D=1, name="dummy_mat")
 mesh = dolfinx.mesh.create_unit_interval(MPI.COMM_WORLD, 10)
 
 
+@pytest.mark.unit
 def test_init():
     """Test that the attributes are set correctly"""
     # create a Source object
@@ -29,6 +30,7 @@ def test_init():
     assert source.source_expr is None
 
 
+@pytest.mark.unit
 def test_value_fenics():
     """Test that the value_fenics attribute can be set to a valid value
     and that an invalid type throws an error
@@ -51,6 +53,7 @@ def test_value_fenics():
         source.value_fenics = "invalid"
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "value, expected_type",
     [
@@ -86,6 +89,7 @@ def test_create_value_fenics(value, expected_type):
     assert isinstance(source.value_fenics, expected_type)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "input, expected_value",
     [
@@ -109,6 +113,7 @@ def test_bc_time_dependent_attribute(input, expected_value):
     assert my_source.time_dependent is expected_value
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "input, expected_value",
     [
@@ -131,6 +136,7 @@ def test_bc_temperature_dependent_attribute(input, expected_value):
     assert my_source.temperature_dependent is expected_value
 
 
+@pytest.mark.unit
 def test_ValueError_raised_when_callable_returns_wrong_type():
     """The create_value method should raise a ValueError when the callable
     returns an object which is not a float or int"""
@@ -154,6 +160,7 @@ def test_ValueError_raised_when_callable_returns_wrong_type():
         source.create_value_fenics(mesh, my_function_space, T, t)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "volume_input",
     [
@@ -178,6 +185,7 @@ def test_TypeError_is_raised_when_volume_wrong_type(volume_input):
         F.Source(volume=volume_input, value=1.0, species=my_spe)
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "species_input",
     [

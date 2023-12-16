@@ -9,6 +9,7 @@ mesh = dolfinx.mesh.create_unit_cube(MPI.COMM_WORLD, 10, 10, 10)
 V = dolfinx.fem.FunctionSpace(mesh, ("Lagrange", 1))
 
 
+@pytest.mark.unit
 def test_vtx_export_one_function(tmpdir):
     """Test can add one function to a vtx export"""
     u = dolfinx.fem.Function(V)
@@ -24,6 +25,7 @@ def test_vtx_export_one_function(tmpdir):
         my_export.write(t)
 
 
+@pytest.mark.unit
 def test_vtx_export_two_functions(tmpdir):
     """Test can add two functions to a vtx export"""
     u = dolfinx.fem.Function(V)
@@ -45,6 +47,7 @@ def test_vtx_export_two_functions(tmpdir):
         my_export.write(t)
 
 
+@pytest.mark.unit
 def test_vtx_integration_with_h_transport_problem(tmpdir):
     my_model = F.HydrogenTransportProblem()
     my_model.mesh = F.Mesh1D(vertices=np.array([0.0, 1.0, 2.0, 3.0, 4.0]))
@@ -69,6 +72,7 @@ def test_vtx_integration_with_h_transport_problem(tmpdir):
         my_export.write(t)
 
 
+@pytest.mark.unit
 def test_field_attribute_is_always_list():
     """Test that the field attribute is always a list"""
     my_export = F.VTXExport("my_export.bp", field=F.Species("H"))
@@ -78,6 +82,7 @@ def test_field_attribute_is_always_list():
     assert isinstance(my_export.field, list)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("field", [["H", 1], 1, [F.Species("H"), 1]])
 def test_field_attribute_raises_error_when_invalid_type(field):
     """Test that the field attribute raises an error if the type is not festim.Species or list"""
@@ -85,18 +90,21 @@ def test_field_attribute_raises_error_when_invalid_type(field):
         F.VTXExport("my_export.bp", field=field)
 
 
+@pytest.mark.unit
 def test_filename_raises_error_with_wrong_extension():
     """Test that the filename attribute raises an error if the extension is not .bp"""
     with pytest.raises(ValueError):
         F.VTXExport("my_export.txt", field=[F.Species("H")])
 
 
+@pytest.mark.unit
 def test_filename_raises_error_when_wrong_type():
     """Test that the filename attribute raises an error if the extension is not .bp"""
     with pytest.raises(TypeError):
         F.VTXExport(1, field=[F.Species("H")])
 
 
+@pytest.mark.integrated
 def test_vtx_field_as_string_found_in_species(tmpdir):
     """Test that the field attribute can be a string and is found in the species list"""
     my_model = F.HydrogenTransportProblem()

@@ -3,6 +3,7 @@ import numpy as np
 import pytest
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("growth_factor, target", [(10, 5), (1.2, 2), (1, 1)])
 def test_adaptive_stepsize_grows(growth_factor, target):
     """Checks that the stepsize is increased correctly
@@ -25,6 +26,7 @@ def test_adaptive_stepsize_grows(growth_factor, target):
     assert np.isclose(new_value, expected_value)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("cutback_factor, target", [(0.8, 5), (0.5, 2), (1, 1)])
 def test_adaptive_stepsize_shrinks(cutback_factor, target):
     """Checks that the stepsize is shrinks correctly
@@ -47,6 +49,7 @@ def test_adaptive_stepsize_shrinks(cutback_factor, target):
     assert np.isclose(new_value, expected_value)
 
 
+@pytest.mark.unit
 def test_stepsize_is_unchanged():
     """
     Checks that the stepsize is unchanged when reaches
@@ -61,6 +64,7 @@ def test_stepsize_is_unchanged():
     assert np.isclose(new_value, current_value)
 
 
+@pytest.mark.unit
 def test_custom_stepsize_not_adaptive():
     """Checks that a custom stepsize that isn't adaptive is unchanged"""
 
@@ -75,6 +79,7 @@ def test_custom_stepsize_not_adaptive():
     assert np.isclose(new_value, current_value)
 
 
+@pytest.mark.unit
 def test_growth_factor_setter():
     """Checks that the growth factor setter works correctly"""
     stepsize = F.Stepsize(1)
@@ -88,6 +93,7 @@ def test_growth_factor_setter():
     assert stepsize.growth_factor is None
 
 
+@pytest.mark.unit
 def test_cutback_factor_setter():
     """Checks that the cutback factor setter works correctly"""
     stepsize = F.Stepsize(1)

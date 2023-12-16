@@ -3,6 +3,7 @@ import festim as F
 from petsc4py import PETSc
 from dolfinx.fem import Constant
 from ufl import exp
+import pytest
 
 
 def relative_error_computed_to_analytical(
@@ -28,6 +29,7 @@ def relative_error_computed_to_analytical(
     return error
 
 
+@pytest.mark.system
 def test_multispecies_permeation_problem():
     """Test running a problem with 2 mobile species permeating through a 1D
     domain, with different diffusion coefficients, checks that the computed

@@ -13,6 +13,7 @@ def sieverts_law(T, S_0, E_S, pressure):
     return S * pressure**0.5
 
 
+@pytest.mark.unit
 def test_raise_error():
     """Test that a value error is raised if the pressure function is not supported in SievertsBC"""
     with pytest.raises(ValueError, match="pressure function not supported"):
@@ -21,6 +22,7 @@ def test_raise_error():
         )
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "pressure",
     [
@@ -64,6 +66,7 @@ def test_create_new_value_function(pressure):
     assert np.isclose(computed_value, expected_value)
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "pressure",
     [

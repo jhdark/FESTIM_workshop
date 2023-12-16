@@ -8,6 +8,7 @@ dummy_mat = F.Material(D_0=1, E_D=0.1, name="dummy_mat")
 test_mesh = F.Mesh1D(np.linspace(0, 1, 100))
 
 
+@pytest.mark.unit
 def test_init():
     """Test that the attributes are set correctly"""
     # create an InitialCondition object
@@ -20,6 +21,7 @@ def test_init():
     assert init_cond.species == species
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "input_value, expected_type",
     [
@@ -54,6 +56,7 @@ def test_create_value_fenics(input_value, expected_type):
     assert isinstance(init_cond.expr_fenics, expected_type)
 
 
+@pytest.mark.unit
 def test_warning_raised_when_giving_time_as_arg():
     """Test that a warning is raised if the value is given with t in its arguments"""
 

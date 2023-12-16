@@ -6,6 +6,7 @@ import numpy as np
 import pytest
 
 
+@pytest.mark.unit
 def test_init():
     """Tests the initialisation of XDMFExport"""
     species = F.Species("H")
@@ -15,6 +16,7 @@ def test_init():
     assert my_export.field == [species]
 
 
+@pytest.mark.unit
 def test_write(tmp_path):
     """Tests the write method of XDMFExport creates a file"""
     species = F.Species("H")
@@ -35,6 +37,7 @@ def test_write(tmp_path):
     assert os.path.exists(filename)
 
 
+@pytest.mark.system
 def test_integration_with_HTransportProblem(tmp_path):
     """Tests that XDMFExport can be used in conjunction with HTransportProblem"""
     my_model = F.HydrogenTransportProblem()
@@ -56,6 +59,7 @@ def test_integration_with_HTransportProblem(tmp_path):
     assert os.path.exists(filename)
 
 
+@pytest.mark.unit
 def test_field_attribute_is_always_list():
     """Test that the field attribute is always a list"""
     my_export = F.XDMFExport("my_export.xdmf", field=F.Species("H"))
@@ -65,6 +69,7 @@ def test_field_attribute_is_always_list():
     assert isinstance(my_export.field, list)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("field", [["H", 2], 1, [F.Species("H"), 1]])
 def test_field_attribute_raises_error_when_invalid_type(field):
     """Test that the field attribute raises an error if the type is not festim.Species or list"""
@@ -72,18 +77,21 @@ def test_field_attribute_raises_error_when_invalid_type(field):
         F.XDMFExport("my_export.xdmf", field=field)
 
 
+@pytest.mark.unit
 def test_filename_raises_error_with_wrong_extension():
     """Test that the filename attribute raises an error if the extension is not .xdmf"""
     with pytest.raises(ValueError):
         F.XDMFExport("my_export.txt", field=[F.Species("H")])
 
 
+@pytest.mark.unit
 def test_filename_raises_error_when_wrong_type():
     """Test that the filename attribute raises an error if the file is not str"""
     with pytest.raises(TypeError):
         F.XDMFExport(1, field=[F.Species("H")])
 
 
+@pytest.mark.integrated
 def test_xdmf_field_as_string_found_in_species(tmpdir):
     """Test that the field attribute can be a string and is found in the species list"""
     my_model = F.HydrogenTransportProblem()

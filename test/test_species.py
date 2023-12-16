@@ -8,6 +8,7 @@ from dolfinx.mesh import create_unit_cube
 from mpi4py import MPI
 
 
+@pytest.mark.integrated
 def test_assign_functions_to_species():
     """Test that checks if the function assign_functions_to_species
     creates the correct attributes for each species
@@ -35,6 +36,7 @@ def test_assign_functions_to_species():
         assert isinstance(spe.test_function, ufl.Argument)
 
 
+@pytest.mark.unit
 def test_species_repr_and_str():
     """Test that the __repr__ and __str__ methods of the Species class returns the
     expected string.
@@ -51,6 +53,7 @@ def test_species_repr_and_str():
     assert str(species) == expected_str
 
 
+@pytest.mark.unit
 def test_implicit_species_repr_and_str():
     """Test that the __repr__ and __str__ methods of the ImplicitSpecies class
     returns the expected string.
@@ -71,6 +74,7 @@ def test_implicit_species_repr_and_str():
     assert str(implicit_species) == expected_str
 
 
+@pytest.mark.unit
 def test_implicit_species_concentration():
     """Test that the concentration of an implicit species is computed
     correctly.
@@ -95,6 +99,7 @@ def test_implicit_species_concentration():
     assert implicit_species.concentration == expected_concentration
 
 
+@pytest.mark.unit
 def test_implicit_species_concentration_with_no_solution():
     """Test that a ValueError is raised when on of the 'others' species
     has no solution and the concentration of the implicit species is
@@ -117,6 +122,7 @@ def test_implicit_species_concentration_with_no_solution():
         implicit_species.concentration
 
 
+@pytest.mark.unit
 def test_create_species_and_reaction():
     """test that the trapped_concentration and trap_reaction attributes
     are correctly set"""

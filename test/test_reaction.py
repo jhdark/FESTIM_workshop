@@ -8,6 +8,7 @@ from ufl import exp
 my_vol = F.VolumeSubdomain1D(id=1, borders=[0, 1], material=None)
 
 
+@pytest.mark.unit
 def test_reaction_init():
     """Test that the Reaction class initialises correctly"""
     # create two species
@@ -32,6 +33,7 @@ def test_reaction_init():
     assert reaction.E_p == 0.3
 
 
+@pytest.mark.unit
 def test_reaction_repr():
     """Test that the Reaction __repr__ method returns the expected string"""
 
@@ -52,6 +54,7 @@ def test_reaction_repr():
     assert repr(reaction) == expected_repr
 
 
+@pytest.mark.unit
 def test_reaction_str():
     """Test that the Reaction __str__ method returns the expected string"""
 
@@ -72,6 +75,7 @@ def test_reaction_str():
     assert str(reaction) == expected_str
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("temperature", [300.0, 350, 370, 500.0])
 def test_reaction_reaction_term(temperature):
     """Test that the Reaction.reaction_term method returns the expected reaction term"""
@@ -108,6 +112,7 @@ def test_reaction_reaction_term(temperature):
     assert reaction.reaction_term(temperature) == expected_reaction_term
 
 
+@pytest.mark.unit
 def test_reactant1_setter_raises_error_with_wrong_type():
     """Test a type error is raised when the reactant1 is given a wrong type."""
     with pytest.raises(
@@ -126,6 +131,7 @@ def test_reactant1_setter_raises_error_with_wrong_type():
         )
 
 
+@pytest.mark.unit
 def test_reactant2_setter_raises_error_with_wrong_type():
     """Test a type error is raised when the reactant2 is given a wrong type."""
     with pytest.raises(

@@ -13,6 +13,7 @@ dummy_mat = F.Material(D_0=1, E_D=1, name="dummy_mat")
 
 
 # TODO test all the methods in the class
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "value", [1, fem.Constant(test_mesh.mesh, 1.0), 1.0, "coucou", lambda x: 2 * x[0]]
 )
@@ -30,6 +31,7 @@ def test_temperature_setter_type(value):
                 my_model.temperature = value
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "input, expected_value",
     [
@@ -51,6 +53,7 @@ def test_time_dependent_temperature_attribute(input, expected_value):
     assert my_model.temperature_time_dependent is expected_value
 
 
+@pytest.mark.unit
 def test_define_temperature_value_error_raised():
     """Test that a ValueError is raised when the temperature is None"""
 
@@ -66,6 +69,7 @@ def test_define_temperature_value_error_raised():
         my_model.define_temperature()
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "input, expected_type",
     [
@@ -98,6 +102,7 @@ def test_define_temperature(input, expected_type):
     assert isinstance(my_model.temperature_fenics, expected_type)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "input",
     [
@@ -121,6 +126,7 @@ def test_define_temperature_error_if_ufl_conditional_t_only(input):
         my_model.define_temperature()
 
 
+@pytest.mark.unit
 def test_iterate():
     """Test that the iterate method updates the solution and time correctly"""
     # BUILD
@@ -168,6 +174,7 @@ def test_iterate():
         assert np.all(np.isclose(my_model.u.x.array, expected_u_value))
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "T_function, expected_values",
     [
@@ -208,6 +215,7 @@ def test_update_time_dependent_values_temperature(T_function, expected_values):
         assert np.isclose(computed_value, expected_values[i])
 
 
+@pytest.mark.unit
 def test_initialise_exports_find_species_with_one_field():
     """Test that a species can be found from the model species if given as a string"""
 
@@ -227,6 +235,7 @@ def test_initialise_exports_find_species_with_one_field():
         my_model.initialise_exports()
 
 
+@pytest.mark.integrated
 def test_define_D_global_different_temperatures():
     """Test that the D_global object is correctly defined when the temperature
     is different in the volume subdomains"""
@@ -261,6 +270,7 @@ def test_define_D_global_different_temperatures():
     assert np.isclose(computed_values, expected_values).all()
 
 
+@pytest.mark.integrated
 def test_define_D_global_different_materials():
     """Test that the D_global object is correctly defined when the material
     is different in the volume subdomains"""
@@ -296,6 +306,7 @@ def test_define_D_global_different_materials():
     assert np.isclose(computed_values, expected_values).all()
 
 
+@pytest.mark.integrated
 def test_initialise_exports_multiple_exports_same_species():
     """Test that the diffusion coefficient within the D_global object function is the same
     for multiple exports of the same species, and that D_global object is only
@@ -337,6 +348,7 @@ def test_initialise_exports_multiple_exports_same_species():
     assert Ds[0].x.array[0] == Ds[1].x.array[0]
 
 
+@pytest.mark.integrated
 def test_define_D_global_multispecies():
     """Test that the D_global object is correctly defined when there are multiple
     species in one subdomain"""
@@ -377,6 +389,7 @@ def test_define_D_global_multispecies():
     assert np.isclose(computed_values, expected_values).all()
 
 
+@pytest.mark.integrated
 def test_post_processing_update_D_global():
     """Test that the D_global object is updated at each time
     step when temperture is time dependent"""
@@ -424,6 +437,7 @@ def test_post_processing_update_D_global():
     assert value_t_1 != value_t_2
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "temperature_value, bc_value, expected_values",
     [
@@ -479,6 +493,7 @@ def test_update_time_dependent_bcs_with_time_dependent_temperature(
         assert np.isclose(computed_value, expected_values[i])
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "source_value, expected_values",
     [
@@ -526,6 +541,7 @@ def test_update_time_dependent_values_source(source_value, expected_values):
         assert np.isclose(computed_value, expected_values[i])
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "temperature_value, source_value, expected_values",
     [
@@ -582,6 +598,7 @@ def test_update_sources_with_time_dependent_temperature(
         assert np.isclose(computed_value, expected_values[i])
 
 
+@pytest.mark.integrated
 def test_create_source_values_fenics_multispecies():
     """Test that the define_sources method correctly sets the value_fenics attribute in
     a multispecies case"""
@@ -614,6 +631,7 @@ def test_create_source_values_fenics_multispecies():
 
 
 # TODO replace this by a proper MMS test
+@pytest.mark.integrated
 def test_run_in_steady_state():
     """Test that the run method works in steady state"""
     # BUILD
@@ -635,6 +653,7 @@ def test_run_in_steady_state():
     assert my_model.t.value == 0.0
 
 
+@pytest.mark.integrated
 def test_species_setter():
     """Test that a TypeError is rasied when a species of type other than F.Species is
     given"""
@@ -648,6 +667,7 @@ def test_species_setter():
         my_model.species = [1, 2, 3]
 
 
+@pytest.mark.integrated
 def test_create_initial_conditions_ValueError_raised_when_not_transient():
     """Test that ValueError is raised if initial conditions are defined in
     a steady state simulation"""
@@ -670,6 +690,7 @@ def test_create_initial_conditions_ValueError_raised_when_not_transient():
         my_model.initialise()
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "input_value, expected_value",
     [
@@ -705,6 +726,7 @@ def test_create_initial_conditions_expr_fenics(input_value, expected_value):
     )
 
 
+@pytest.mark.integrated
 def test_create_species_from_trap():
     "Test that a new species and reaction is created when a trap is given"
 
@@ -745,6 +767,7 @@ def test_create_species_from_trap():
     assert isinstance(my_model.reactions[0], F.Reaction)
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "input_value_1, input_value_2, expected_value_1, expected_value_2",
     [
@@ -792,6 +815,7 @@ def test_create_initial_conditions_value_fenics_multispecies(
     assert np.isclose(my_model.u_n.x.array[-1], expected_value_2)
 
 
+@pytest.mark.integrated
 def test_adaptive_timestepping_grows():
     """Tests that the stepsize grows"""
     # BUILD
@@ -828,6 +852,7 @@ def test_adaptive_timestepping_grows():
         previous_value = float(my_model.dt)
 
 
+@pytest.mark.integrated
 def test_adaptive_timestepping_shrinks():
     """Tests that the stepsize shrinks"""
     # BUILD
@@ -864,6 +889,7 @@ def test_adaptive_timestepping_shrinks():
         previous_value = float(my_model.dt)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "attribute, value",
     [

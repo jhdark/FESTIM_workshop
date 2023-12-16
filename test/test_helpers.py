@@ -8,6 +8,7 @@ test_mesh = F.Mesh1D(vertices=np.array([0.0, 1.0, 2.0, 3.0, 4.0]))
 x = ufl.SpatialCoordinate(test_mesh.mesh)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "value", [1, fem.Constant(test_mesh.mesh, 1.0), 1.0, "coucou", 2 * x[0]]
 )

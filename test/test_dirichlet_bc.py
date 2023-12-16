@@ -9,10 +9,10 @@ from mpi4py import MPI
 import festim as F
 
 dummy_mat = F.Material(D_0=1, E_D=1, name="dummy_mat")
-
 mesh = dolfinx.mesh.create_unit_interval(MPI.COMM_WORLD, 10)
 
 
+@pytest.mark.unit
 def test_init():
     """Test that the attributes are set correctly"""
     # create a DirichletBC object
@@ -29,6 +29,7 @@ def test_init():
     assert bc.bc_expr is None
 
 
+@pytest.mark.unit
 def test_value_fenics():
     """Test that the value_fenics attribute can be set to a valid value
     and that an invalid type throws an error
@@ -51,6 +52,7 @@ def test_value_fenics():
         bc.value_fenics = "invalid"
 
 
+@pytest.mark.integrated
 def test_callable_for_value():
     """Test that the value attribute can be a callable function of x and t"""
 
@@ -89,6 +91,7 @@ def test_callable_for_value():
         assert np.isclose(computed_value, expected_value)
 
 
+@pytest.mark.integrated
 def test_value_callable_x_t_T():
     """Test that the value attribute can be a callable function of x, t, and T"""
 
@@ -130,6 +133,7 @@ def test_value_callable_x_t_T():
         assert np.isclose(computed_value, expected_value)
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize("value", [lambda t: t, lambda t: 1.0 + t])
 def test_callable_t_only(value):
     """Test that the value attribute can be a callable function of t only"""
@@ -172,6 +176,7 @@ def test_callable_t_only(value):
         assert np.isclose(computed_value, expected_value)
 
 
+@pytest.mark.integrated
 def test_callable_x_only():
     """Test that the value attribute can be a callable function of x only"""
 
@@ -216,6 +221,7 @@ def test_callable_x_only():
         assert np.isclose(computed_value, expected_value)
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "value",
     [
@@ -284,6 +290,7 @@ def test_integration_with_HTransportProblem(value):
     assert np.isclose(computed_value, expected_value)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "value",
     [
@@ -310,6 +317,7 @@ def test_define_value_error_if_ufl_conditional_t_only(value):
         bc.create_value(mesh=mesh, function_space=None, temperature=None, t=t)
 
 
+@pytest.mark.integrated
 def test_species_predefined():
     """Test a ValueError is raised when the species defined in the boundary
     condition is not predefined in the model"""
@@ -332,6 +340,7 @@ def test_species_predefined():
         my_model.initialise()
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize(
     "value_A, value_B",
     [
@@ -406,6 +415,7 @@ def test_integration_with_a_multispecies_HTransportProblem(value_A, value_B):
     assert np.isclose(computed_value, expected_value)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "input, expected_value",
     [
@@ -429,6 +439,7 @@ def test_bc_time_dependent_attribute(input, expected_value):
     assert my_bc.time_dependent is expected_value
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize(
     "input, expected_value",
     [

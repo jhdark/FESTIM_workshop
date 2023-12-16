@@ -5,6 +5,7 @@ import pytest
 test_mesh = F.Mesh1D(vertices=np.array([0.0, 1.0, 2.0, 3.0, 4.0]))
 
 
+@pytest.mark.unit
 def test_define_diffusion_coefficient():
     """Test that the diffusion coefficient is correctly defined"""
     T, D_0, E_D = 10, 1.2, 0.5
@@ -17,6 +18,7 @@ def test_define_diffusion_coefficient():
     assert np.isclose(float(D), D_analytical)
 
 
+@pytest.mark.unit
 def test_multispecies_dict_strings():
     """Test that the diffusion coefficient is correctly defined when keys are
     strings"""
@@ -39,6 +41,7 @@ def test_multispecies_dict_strings():
     assert np.isclose(D, D_analytical).all()
 
 
+@pytest.mark.unit
 def test_multispecies_dict_objects():
     """Test that the diffusion coefficient is correctly defined when keys are
     festim.Species objects"""
@@ -62,6 +65,7 @@ def test_multispecies_dict_objects():
     assert np.isclose(D, D_analytical).all()
 
 
+@pytest.mark.unit
 def test_multispecies_dict_objects_and_strings():
     """Test that the diffusion coefficient is correctly defined when keys
     are a mix of festim.Species objects and strings"""
@@ -85,6 +89,7 @@ def test_multispecies_dict_objects_and_strings():
     assert np.isclose(D, D_analytical).all()
 
 
+@pytest.mark.unit
 def test_multispecies_dict_different_keys():
     """Test that a value error is raised when the keys of the D_0 and E_D
     are not the same"""
@@ -95,6 +100,7 @@ def test_multispecies_dict_different_keys():
         my_mat.get_diffusion_coefficient(test_mesh.mesh, 500, species=A)
 
 
+@pytest.mark.unit
 def test_D_0_type_raises_error():
     """Test that a value error is raised in the get_diffusion_coefficient
     function"""
@@ -106,6 +112,7 @@ def test_D_0_type_raises_error():
         my_mat.get_diffusion_coefficient(test_mesh.mesh, 500, species=A)
 
 
+@pytest.mark.unit
 def test_error_raised_when_species_not_given_with_dict():
     """Test that a value error is raised when a species has not been given in
     the get_diffusion_coefficient function when using a dict for properties"""
@@ -119,6 +126,7 @@ def test_error_raised_when_species_not_given_with_dict():
         my_mat.get_diffusion_coefficient(test_mesh.mesh, 500)
 
 
+@pytest.mark.unit
 def test_error_raised_when_species_not_not_in_D_0_dict():
     """Test that a value error is raised when a species has not been given but
     has no value in the dict"""
@@ -131,6 +139,7 @@ def test_error_raised_when_species_not_not_in_D_0_dict():
         my_mat.get_diffusion_coefficient(test_mesh.mesh, 500, species=J)
 
 
+@pytest.mark.unit
 def test_D_0_raises_ValueError_if_species_not_provided_in_dict():
     """Test that a value error is raised in the get_diffusion_coefficient
     function"""
@@ -143,6 +152,7 @@ def test_D_0_raises_ValueError_if_species_not_provided_in_dict():
         my_mat.get_D_0()
 
 
+@pytest.mark.unit
 def test_D_0_raises_ValueError_if_species_given_not_in_dict_keys():
     """Test that a value error is raised in the get_diffusion_coefficient
     function"""
@@ -156,6 +166,7 @@ def test_D_0_raises_ValueError_if_species_given_not_in_dict_keys():
         my_mat.get_D_0(species=J)
 
 
+@pytest.mark.unit
 def test_raises_TypeError_when_D_0_is_not_correct_type():
     """Test that a TypeError is raised when D_0 is not a float or a dict"""
 
@@ -165,6 +176,7 @@ def test_raises_TypeError_when_D_0_is_not_correct_type():
         my_mat.get_D_0()
 
 
+@pytest.mark.unit
 def test_E_D_raises_ValueError_if_species_not_provided_in_dict():
     """Test that a value error is raised in the get_diffusion_coefficient
     function"""
@@ -177,6 +189,7 @@ def test_E_D_raises_ValueError_if_species_not_provided_in_dict():
         my_mat.get_E_D()
 
 
+@pytest.mark.unit
 def test_E_D_raises_ValueError_if_species_given_not_in_dict_keys():
     """Test that a value error is raised in the get_diffusion_coefficient
     function"""
@@ -190,6 +203,7 @@ def test_E_D_raises_ValueError_if_species_given_not_in_dict_keys():
         my_mat.get_E_D(species=J)
 
 
+@pytest.mark.unit
 def test_raises_TypeError_when_E_D_is_not_correct_type():
     """Test that a TypeError is raised when E_D is not a float or a dict"""
 

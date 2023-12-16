@@ -1,7 +1,9 @@
 import festim as F
 import numpy as np
+import pytest
 
 
+@pytest.mark.system
 def test_sim_reaction_not_in_every_volume():
     """Tests that a steady simulation can be run if a reaction is not defined
     in every volume"""

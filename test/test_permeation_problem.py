@@ -5,6 +5,7 @@ import numpy as np
 import festim as F
 import os
 import ufl
+import pytest
 
 
 def relative_error_computed_to_analytical(
@@ -30,6 +31,7 @@ def relative_error_computed_to_analytical(
     return error
 
 
+@pytest.mark.system
 def test_permeation_problem(mesh_size=1001):
     """Test running a problem with a mobile species permeating through a 1D
     domain, checks that the computed permeation flux matches the analytical
@@ -115,6 +117,7 @@ def test_permeation_problem(mesh_size=1001):
     assert error < 0.01
 
 
+@pytest.mark.system
 def test_permeation_problem_multi_volume(tmp_path):
     """Same permeation problem as above but with 4 volume subdomains instead
     of 1"""

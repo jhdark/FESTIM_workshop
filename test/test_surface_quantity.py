@@ -7,7 +7,8 @@ import pytest
 import os
 
 
-def surface_flux_export_compute():
+@pytest.mark.unit
+def test_surface_flux_export_compute():
     """Test that the surface flux export computes the correct value"""
 
     # BUILD
@@ -53,6 +54,7 @@ def surface_flux_export_compute():
     assert np.isclose(computed_value, expected_value, rtol=1e-2)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("value", ["my_export.csv", "my_export.txt"])
 def test_title_generation(tmp_path, value):
     """Test that the title is made to be written to the header in a csv or txt file"""
@@ -70,6 +72,7 @@ def test_title_generation(tmp_path, value):
     assert title[1] == expected_title
 
 
+@pytest.mark.unit
 def test_filename_setter_raises_TypeError():
     """Test that a TypeError is raised when the filename is not a string"""
 
@@ -81,6 +84,7 @@ def test_filename_setter_raises_TypeError():
         )
 
 
+@pytest.mark.unit
 def test_filename_setter_raises_ValueError(tmp_path):
     """Test that a ValueError is raised when the filename does not end with .csv or .txt"""
 
@@ -92,6 +96,7 @@ def test_filename_setter_raises_ValueError(tmp_path):
         )
 
 
+@pytest.mark.unit
 def test_field_setter_raises_TypeError():
     """Test that a TypeError is raised when the field is not a F.Species"""
 
@@ -102,6 +107,7 @@ def test_field_setter_raises_TypeError():
         )
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("value", ["my_export.csv", "my_export.txt"])
 def test_writer(tmp_path, value):
     """Test that the writes values at each timestep to either a csv or txt file"""
@@ -121,6 +127,7 @@ def test_writer(tmp_path, value):
         assert file_length == expected_length
 
 
+@pytest.mark.unit
 def test_surface_setter_raises_TypeError():
     """Test that a TypeError is raised when the surface is not a
     F.SurfaceSubdomain1D"""

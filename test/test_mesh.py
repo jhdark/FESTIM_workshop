@@ -11,6 +11,7 @@ mesh_2D = fenics_mesh.create_unit_square(MPI.COMM_WORLD, 10, 10)
 mesh_3D = fenics_mesh.create_unit_cube(MPI.COMM_WORLD, 10, 10, 10)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("mesh", [mesh_1D, mesh_2D, mesh_3D])
 def test_get_fdim(mesh):
     my_mesh = F.Mesh(mesh)
@@ -18,6 +19,7 @@ def test_get_fdim(mesh):
     assert my_mesh.fdim == mesh.topology.dim - 1
 
 
+@pytest.mark.unit
 def test_fdim_changes_when_mesh_changes():
     my_mesh = F.Mesh()
 
@@ -26,6 +28,7 @@ def test_fdim_changes_when_mesh_changes():
         assert my_mesh.fdim == mesh.topology.dim - 1
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("mesh", [mesh_1D, mesh_2D, mesh_3D])
 def test_get_vdim(mesh):
     my_mesh = F.Mesh(mesh)
@@ -33,6 +36,7 @@ def test_get_vdim(mesh):
     assert my_mesh.vdim == mesh.topology.dim
 
 
+@pytest.mark.unit
 def test_vdim_changes_when_mesh_changes():
     my_mesh = F.Mesh()
 
@@ -41,6 +45,7 @@ def test_vdim_changes_when_mesh_changes():
         assert my_mesh.vdim == mesh.topology.dim
 
 
+@pytest.mark.integrated
 @pytest.mark.parametrize("mesh", [mesh_1D, mesh_2D, mesh_3D])
 def test_meshtags_from_xdmf(tmp_path, mesh):
     """Test that the facet and volume meshtags are read correctly from the mesh XDMF files"""

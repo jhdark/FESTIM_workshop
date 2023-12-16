@@ -3,6 +3,7 @@ import festim as F
 import pytest
 
 
+@pytest.mark.integrated
 def test_different_surface_ids():
     """Checks that different surface ids are correctly set"""
     my_test_model = F.HydrogenTransportProblem()
@@ -27,6 +28,7 @@ def test_different_surface_ids():
         assert surf_id in np.array(my_test_model.facet_meshtags.values)
 
 
+@pytest.mark.unit
 def test_different_volume_ids():
     my_model = F.HydrogenTransportProblem()
     my_model.mesh = F.Mesh1D(vertices=np.linspace(0, 10, 11))
@@ -49,6 +51,7 @@ def test_different_volume_ids():
         assert vol_id in np.array(my_model.volume_meshtags.values)
 
 
+@pytest.mark.unit
 def test_non_matching_volume_borders():
     """Checks that non-matching borders raise an error"""
     mesh = F.Mesh1D(vertices=np.linspace(0, 5, 6))
@@ -60,6 +63,7 @@ def test_non_matching_volume_borders():
         mesh.check_borders(subdomains)
 
 
+@pytest.mark.unit
 def test_matching_volume_borders_non_ascending_order():
     """Checks that subdomain placed in non ascending order still passes"""
     mesh = F.Mesh1D(vertices=np.linspace(0, 8, 9))
@@ -71,6 +75,7 @@ def test_matching_volume_borders_non_ascending_order():
     mesh.check_borders(subdomains)
 
 
+@pytest.mark.unit
 def test_borders_out_of_domain():
     """Checks that borders outside of the domain raise an error"""
     mesh = F.Mesh1D(vertices=np.linspace(0, 2))
@@ -79,6 +84,7 @@ def test_borders_out_of_domain():
         mesh.check_borders(subdomains)
 
 
+@pytest.mark.unit
 def test_borders_inside_domain():
     """Checks that borders inside of the domain raise an error"""
     mesh = F.Mesh1D(vertices=np.linspace(0, 20))
@@ -87,6 +93,7 @@ def test_borders_inside_domain():
         mesh.check_borders(subdomains)
 
 
+@pytest.mark.unit
 def test_raise_error_with_no_volume_subdomain():
     """Checks that error is rasied when no volume subdomain is defined"""
     mesh = F.Mesh1D(vertices=np.linspace(0, 20))
@@ -95,6 +102,7 @@ def test_raise_error_with_no_volume_subdomain():
         mesh.check_borders([])
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("input", [1, 2, 3, 4])
 def test_find_volume_from_int(input):
     """test that the correct volume is returned when input is an int"""
@@ -109,6 +117,7 @@ def test_find_volume_from_int(input):
     assert F.find_volume_from_id(input, volumes) == volumes[input - 1]
 
 
+@pytest.mark.unit
 def test_ValueError_raised_when_id_not_found_in_volumes_subdomains():
     """test that a ValueError is raised when an id is not found in the list of volume subdomains"""
 
@@ -118,6 +127,7 @@ def test_ValueError_raised_when_id_not_found_in_volumes_subdomains():
         F.find_volume_from_id(5, volumes)
 
 
+@pytest.mark.integrated
 def test_ValueError_rasied_when_volume_ids_are_not_unique():
     """Checks"""
     my_test_model = F.HydrogenTransportProblem(
@@ -137,6 +147,7 @@ def test_ValueError_rasied_when_volume_ids_are_not_unique():
         my_test_model.define_meshtags_and_measures()
 
 
+@pytest.mark.unit
 def test_ValueError_raised_when_id_not_found_in_surface_subdomains():
     """test that a ValueError is raised when an id is not found in the list of surface subdomains"""
 
@@ -146,6 +157,7 @@ def test_ValueError_raised_when_id_not_found_in_surface_subdomains():
         F.find_surface_from_id(3, surfaces)
 
 
+@pytest.mark.unit
 @pytest.mark.parametrize("input_id, output_index", [(1, 2), (4, 0), (7, 1), (9, 3)])
 def test_find_surface_from_id(input_id, output_index):
     """test that the correct surface is returned when input is an int"""
@@ -160,6 +172,7 @@ def test_find_surface_from_id(input_id, output_index):
     assert F.find_surface_from_id(input_id, surfaces) == surfaces[output_index]
 
 
+@pytest.mark.unit
 def test_volume_subdomain_properties():
     """Tests that the volume subdomain property obtains the correct
     subdomains from the the model subdomains list"""
