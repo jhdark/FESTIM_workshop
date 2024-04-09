@@ -160,6 +160,12 @@ class HeatTransferProblem:
             dolfinx.fem.bcs.DirichletBC: A representation of
                 the boundary condition for modifying linear systems.
         """
+        bc.value_fenics, bc.bc_expr = F.create_value_fenics(
+            value=bc.value,
+            mesh=self.mesh.mesh,
+            function_space=self.function_space,
+            t=self.t,
+        )
         bc.create_value(
             mesh=self.mesh.mesh,
             function_space=self.function_space,

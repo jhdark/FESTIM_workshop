@@ -540,7 +540,8 @@ class HydrogenTransportProblem:
             else:
                 function_space_value = bc.species.collapsed_function_space
 
-        bc.create_value(
+        bc.value_fenics, bc.bc_expr = F.create_value_fenics(
+            value=bc.value,
             mesh=self.mesh.mesh,
             temperature=self.temperature_fenics,
             function_space=function_space_value,
@@ -590,12 +591,19 @@ class HydrogenTransportProblem:
                     else:
                         function_space_value = source.species.collapsed_function_space
 
-                source.create_value_fenics(
+                source.value_fenics, source.source_expr = F.create_value_fenics(
+                    value=source.value,
                     mesh=self.mesh.mesh,
                     temperature=self.temperature_fenics,
                     function_space=function_space_value,
                     t=self.t,
                 )
+                # source.create_value_fenics(
+                #     mesh=self.mesh.mesh,
+                #     temperature=self.temperature_fenics,
+                #     function_space=function_space_value,
+                #     t=self.t,
+                # )
 
     def create_initial_conditions(self):
         """For each initial condition, create the value_fenics and assign it to

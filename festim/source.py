@@ -82,6 +82,18 @@ class SourceBase:
         else:
             return False
 
+    @property
+    def temperature_dependent(self):
+        if self.value is None:
+            return False
+        if isinstance(self.value, fem.Constant):
+            return False
+        if callable(self.value):
+            arguments = self.value.__code__.co_varnames
+            return "T" in arguments
+        else:
+            return False
+
     def update(self, t):
         """Updates the source value
 
@@ -97,8 +109,9 @@ class SourceBase:
 
 
 class ParticleSource(SourceBase):
-    def __init__(self, value, volume, species):
+    def __init__(self, value, volume, species, species_dependent_value):
         self.species = species
+        self.species_dependent_value = species_dependent_value
         super().__init__(value, volume)
 
     @property
@@ -113,124 +126,127 @@ class ParticleSource(SourceBase):
 
         self._species = value
 
-    @property
-    def temperature_dependent(self):
-        if self.value is None:
-            return False
-        if isinstance(self.value, fem.Constant):
-            return False
-        if callable(self.value):
-            arguments = self.value.__code__.co_varnames
-            return "T" in arguments
-        else:
-            return False
+    # @property
+    # def temperature_dependent(self):
+    #     if self.value is None:
+    #         return False
+    #     if isinstance(self.value, fem.Constant):
+    #         return False
+    #     if callable(self.value):
+    #         arguments = self.value.__code__.co_varnames
+    #         return "T" in arguments
+    #     else:
+    #         return False
 
-    def create_value_fenics(
-        self, mesh, function_space: fem.FunctionSpaceBase, temperature, t: fem.Constant
-    ):
-        """Creates the value of the source as a fenics object and sets it to
-        self.value_fenics.
-        If the value is a constant, it is converted to a fenics.Constant.
-        If the value is a function of t, it is converted to a fenics.Constant.
-        Otherwise, it is converted to a fenics.Function and the
-        expression of the function is stored in self.bc_expr.
+    # def create_value_fenics(
+    #     self, mesh, function_space: fem.FunctionSpaceBase, temperature, t: fem.Constant
+    # ):
+    #     """Creates the value of the source as a fenics object and sets it to
+    #     self.value_fenics.
+    #     If the value is a constant, it is converted to a fenics.Constant.
+    #     If the value is a function of t, it is converted to a fenics.Constant.
+    #     Otherwise, it is converted to a fenics.Function and the
+    #     expression of the function is stored in self.bc_expr.
 
-        Args:
-            mesh (dolfinx.mesh.Mesh) : the mesh
-            function_space (dolfinx.fem.FunctionSpaceBase): the function space
-            temperature (float): the temperature
-            t (dolfinx.fem.Constant): the time
-        """
-        x = ufl.SpatialCoordinate(mesh)
+    #     Args:
+    #         mesh (dolfinx.mesh.Mesh) : the mesh
+    #         function_space (dolfinx.fem.FunctionSpaceBase): the function space
+    #         temperature (float): the temperature
+    #         t (dolfinx.fem.Constant): the time
+    #     """
+    #     x = ufl.SpatialCoordinate(mesh)
 
-        if isinstance(self.value, (int, float)):
-            self.value_fenics = F.as_fenics_constant(mesh=mesh, value=self.value)
+    #     if isinstance(self.value, (int, float)):
+    #         self.value_fenics = F.as_fenics_constant(mesh=mesh, value=self.value)
 
-        elif isinstance(self.value, (fem.Function, ufl.core.expr.Expr)):
-            self.value_fenics = self.value
+    #     elif isinstance(self.value, (fem.Function, ufl.core.expr.Expr)):
+    #         self.value_fenics = self.value
 
-        elif callable(self.value):
-            arguments = self.value.__code__.co_varnames
+    #     elif callable(self.value):
+    #         arguments = self.value.__code__.co_varnames
 
-            if "t" in arguments and "x" not in arguments and "T" not in arguments:
-                # only t is an argument
-                if not isinstance(self.value(t=float(t)), (float, int)):
-                    raise ValueError(
-                        f"self.value should return a float or an int, not {type(self.value(t=float(t)))} "
-                    )
-                self.value_fenics = F.as_fenics_constant(
-                    mesh=mesh, value=self.value(t=float(t))
-                )
-            else:
-                self.value_fenics = fem.Function(function_space)
-                kwargs = {}
-                if "t" in arguments:
-                    kwargs["t"] = t
-                if "x" in arguments:
-                    kwargs["x"] = x
-                if "T" in arguments:
-                    kwargs["T"] = temperature
+    #         if "t" in arguments and "x" not in arguments and "T" not in arguments:
+    #             # only t is an argument
+    #             if not isinstance(self.value(t=float(t)), (float, int)):
+    #                 raise ValueError(
+    #                     f"self.value should return a float or an int, not {type(self.value(t=float(t)))} "
+    #                 )
+    #             self.value_fenics = F.as_fenics_constant(
+    #                 mesh=mesh, value=self.value(t=float(t))
+    #             )
+    #         else:
+    #             self.value_fenics = fem.Function(function_space)
+    #             kwargs = {}
+    #             if "t" in arguments:
+    #                 kwargs["t"] = t
+    #             if "x" in arguments:
+    #                 kwargs["x"] = x
+    #             if "T" in arguments:
+    #                 kwargs["T"] = temperature
 
-                # store the expression of the source
-                # to update the value_fenics later
-                self.source_expr = fem.Expression(
-                    self.value(**kwargs),
-                    function_space.element.interpolation_points(),
-                )
-                self.value_fenics.interpolate(self.source_expr)
+    #             # store the expression of the source
+    #             # to update the value_fenics later
+    #             self.source_expr = fem.Expression(
+    #                 self.value(**kwargs),
+    #                 function_space.element.interpolation_points(),
+    #             )
+    #             self.value_fenics.interpolate(self.source_expr)
 
 
 class HeatSource(SourceBase):
     def __init__(self, value, volume):
         super().__init__(value, volume)
 
-    def create_value_fenics(
-        self,
-        mesh: dolfinx.mesh.Mesh,
-        function_space: fem.FunctionSpace,
-        t: fem.Constant,
-    ):
-        """Creates the value of the source as a fenics object and sets it to
-        self.value_fenics.
-        If the value is a constant, it is converted to a fenics.Constant.
-        If the value is a function of t, it is converted to a fenics.Constant.
-        Otherwise, it is converted to a fenics.Function and the
-        expression of the function is stored in self.bc_expr.
+        if self.temperature_dependent:
+            raise ValueError(f"HeatSource value cannot be a function of temperature")
 
-        Args:
-            mesh (dolfinx.mesh.Mesh) : the mesh
-            function_space (dolfinx.fem.FunctionSpace): the function space
-            t (dolfinx.fem.Constant): the time
-        """
-        x = ufl.SpatialCoordinate(mesh)
+    # def create_value_fenics(
+    #     self,
+    #     mesh: dolfinx.mesh.Mesh,
+    #     function_space: fem.FunctionSpace,
+    #     t: fem.Constant,
+    # ):
+    #     """Creates the value of the source as a fenics object and sets it to
+    #     self.value_fenics.
+    #     If the value is a constant, it is converted to a fenics.Constant.
+    #     If the value is a function of t, it is converted to a fenics.Constant.
+    #     Otherwise, it is converted to a fenics.Function and the
+    #     expression of the function is stored in self.bc_expr.
 
-        if isinstance(self.value, (int, float)):
-            self.value_fenics = F.as_fenics_constant(mesh=mesh, value=self.value)
+    #     Args:
+    #         mesh (dolfinx.mesh.Mesh) : the mesh
+    #         function_space (dolfinx.fem.FunctionSpace): the function space
+    #         t (dolfinx.fem.Constant): the time
+    #     """
+    #     x = ufl.SpatialCoordinate(mesh)
 
-        elif callable(self.value):
-            arguments = self.value.__code__.co_varnames
+    #     if isinstance(self.value, (int, float)):
+    #         self.value_fenics = F.as_fenics_constant(mesh=mesh, value=self.value)
 
-            if "t" in arguments and "x" not in arguments:
-                # only t is an argument
-                if not isinstance(self.value(t=float(t)), (float, int)):
-                    raise ValueError(
-                        f"self.value should return a float or an int, not {type(self.value(t=float(t)))} "
-                    )
-                self.value_fenics = F.as_fenics_constant(
-                    mesh=mesh, value=self.value(t=float(t))
-                )
-            else:
-                self.value_fenics = fem.Function(function_space)
-                kwargs = {}
-                if "t" in arguments:
-                    kwargs["t"] = t
-                if "x" in arguments:
-                    kwargs["x"] = x
+    #     elif callable(self.value):
+    #         arguments = self.value.__code__.co_varnames
 
-                # store the expression of the source
-                # to update the value_fenics later
-                self.source_expr = fem.Expression(
-                    self.value(**kwargs),
-                    function_space.element.interpolation_points(),
-                )
-                self.value_fenics.interpolate(self.source_expr)
+    #         if "t" in arguments and "x" not in arguments:
+    #             # only t is an argument
+    #             if not isinstance(self.value(t=float(t)), (float, int)):
+    #                 raise ValueError(
+    #                     f"self.value should return a float or an int, not {type(self.value(t=float(t)))} "
+    #                 )
+    #             self.value_fenics = F.as_fenics_constant(
+    #                 mesh=mesh, value=self.value(t=float(t))
+    #             )
+    #         else:
+    #             self.value_fenics = fem.Function(function_space)
+    #             kwargs = {}
+    #             if "t" in arguments:
+    #                 kwargs["t"] = t
+    #             if "x" in arguments:
+    #                 kwargs["x"] = x
+
+    #             # store the expression of the source
+    #             # to update the value_fenics later
+    #             self.source_expr = fem.Expression(
+    #                 self.value(**kwargs),
+    #                 function_space.element.interpolation_points(),
+    #             )
+    #             self.value_fenics.interpolate(self.source_expr)
