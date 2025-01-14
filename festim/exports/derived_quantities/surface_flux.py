@@ -200,13 +200,13 @@ class SurfaceFluxSpherical(SurfaceFlux):
         field (str, int):  the field ("solute", 0, 1, "T", "retention")
         surface (int): the surface id
         azimuth_range (tuple, optional): Range of the azimuthal angle
-            (phi) needs to be between 0 and pi. Defaults to (0, np.pi).
+            (phi) needs to be between 0 and 2 pi. Defaults to (0, 2 * np.pi).
         polar_range (tuple, optional): Range of the polar angle
-            (theta) needs to be between - pi and pi. Defaults to (-np.pi, np.pi).
+            (theta) needs to be between 0 and pi. Defaults to (0, np.pi).
     """
 
     def __init__(
-        self, field, surface, azimuth_range=(0, np.pi), polar_range=(-np.pi, np.pi)
+        self, field, surface, azimuth_range=(0, 2 * np.pi), polar_range=(0, np.pi)
     ) -> None:
         super().__init__(field=field, surface=surface)
         self.r = None
@@ -242,8 +242,8 @@ class SurfaceFluxSpherical(SurfaceFlux):
 
     @polar_range.setter
     def polar_range(self, value):
-        if value[0] < -np.pi or value[1] > np.pi:
-            raise ValueError("Polar range must be between - pi and pi")
+        if value[0] < 0 or value[1] > np.pi:
+            raise ValueError("Polar range must be between 0 and pi")
         self._polar_range = value
 
     @property
@@ -252,8 +252,8 @@ class SurfaceFluxSpherical(SurfaceFlux):
 
     @azimuth_range.setter
     def azimuth_range(self, value):
-        if value[0] < 0 or value[1] > np.pi:
-            raise ValueError("Azimuthal range must be between 0 and pi")
+        if value[0] < 0 or value[1] > 2 * np.pi:
+            raise ValueError("Azimuthal range must be between 0 and 2 pi")
         self._azimuth_range = value
 
     def compute(self):
@@ -267,7 +267,7 @@ class SurfaceFluxSpherical(SurfaceFlux):
 
         # dS_r = r^2 sin(theta) dtheta dphi
         # integral(f dS_r) = integral(f r^2 sin(theta) dtheta dphi)
-        #                  = (phi2 - phi1) * (-cos(theta2) + cos(theta1)) * f r^2
+        #                  = (theta2 - theta1) * (cos(phi1) - cos(phi2)) * f r^2
         flux = f.assemble(
             self.prop
             * self.r**2
@@ -284,7 +284,7 @@ class SurfaceFluxSpherical(SurfaceFlux):
                 * f.dot(f.grad(self.T), self.n)
                 * self.ds(self.surface)
             )
-        flux *= (self.polar_range[1] - self.polar_range[0]) * (
-            -np.cos(self.azimuth_range[1]) + np.cos(self.azimuth_range[0])
+        flux *= (self.azimuth_range[1] - self.azimuth_range[0]) * (
+            np.cos(self.polar_range[0]) - np.cos(self.polar_range[1])
         )
         return flux
